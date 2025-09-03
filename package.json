@@ -1,9 +1,10 @@
 {
   "name": "filecoin-watch",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "scripts": {
-    "dev": "astro dev",
+    "data": "mkdir -p ./src/data && bash datasets/daily_metrics.csv.sh > ./src/data/daily_metrics.csv",
+    "prebuild": "npm run data",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
