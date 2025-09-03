@@ -6,7 +6,7 @@ import mdx from '@astrojs/mdx';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://nexusdatalabs.github.io/',
-  base: '/filecoin-watch',
+  base: '/filecoin-watch/',
   experimental: {
     fonts: [
       {
