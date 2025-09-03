@@ -1,0 +1,56 @@
+---
+layout: "../layouts/Layout.astro"
+---
+
+import csvText from "../data/daily_metrics.csv?raw";
+
+export const latestEntries = (() => {
+  const lines = csvText.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const headers = lines.shift().split(",");
+  const rows = lines.map((line) => line.split(","));
+  const dateIdx = headers.indexOf("date");
+  const latestRow = rows.reduce((best, cur) => {
+    if (!best) return cur;
+    // ISO date strings compare lexicographically
+    return cur[dateIdx] > best[dateIdx] ? cur : best;
+  }, null);
+  return headers.map((h, i) => [h, latestRow?.[i] ?? ""]);
+})();
+
+<header class="masthead">
+  <div class="logo">
+    <a href="/" aria-label="Filecoin Watch home">
+      <img src="/favicon.svg" alt="Filecoin Watch" width="56" height="56" decoding="async" loading="eager" fetchpriority="high" />
+    </a>
+
+    <nav class="navbar" aria-label="Primary">
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#metrics">Metrics</a></li>
+        <li><a href="#status">Status</a></li>
+      </ul>
+    </nav>
+
+    <h1>Filecoin Watch</h1>
+    <div class="subhead">
+      An operational view into the Filecoin network
+    </div>
+  </div>
+</header>
+
+## About
+
+Filecoin Watch is a tiny site that creates essential Filecoin reports across entities like Clients, Providers, Onramps, or Allocators using data from the Filecoin Data Portal.
+
+## Metrics
+
+<ul>
+  {
+    latestEntries.map(([key, value]) => (<li><strong>{key}:</strong> {value}</li>))
+  }
+</ul>
+
+## Status
+
+Super Alpha. Data wiring and charts coming soon.

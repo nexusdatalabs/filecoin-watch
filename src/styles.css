@@ -1,0 +1,431 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+:root {
+    color-scheme: light only;
+
+    /* Typography */
+    /* Use JetBrains Mono everywhere (project choice) */
+    --font-sans: var(--font-jetbrains-mono), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    --font-monospace: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    /* Light theme colors */
+    --bg: #fff;
+    --fg: #111;
+    --muted: #666;
+    --border: #e5e5e5;
+    --code-bg: #f6f8fa;
+    --blockquote-bg: #fafafa;
+    --link-underline: #b1b1b1;
+
+    /* Spacing scale (4px base) */
+    --space-0: 0;
+    --space-1: 0.25rem;
+    /* 4px */
+    --space-2: 0.5rem;
+    /* 8px */
+    --space-3: 0.75rem;
+    /* 12px */
+    --space-4: 1rem;
+    /* 16px */
+    --space-5: 1.25rem;
+    /* 20px */
+    --space-6: 1.5rem;
+    /* 24px */
+    --space-8: 2rem;
+    /* 32px */
+    --space-10: 2.5rem;
+    /* 40px */
+    --space-12: 3rem;
+    /* 48px */
+    --space-16: 4rem;
+    /* 64px */
+
+    /* Container spacing tokens */
+    --container-px: clamp(var(--space-5), 4vw, var(--space-10));
+    --container-my: clamp(var(--space-6), 6vh, var(--space-16));
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* Page container keeps content centered and readable */
+.container {
+    max-width: 70ch;
+    /* Comfortable reading measure */
+    margin-inline: auto;
+    margin-block: var(--container-my);
+    /* vertical breathing room */
+    padding: var(--container-px);
+    display: block;
+}
+
+html {
+    scrollbar-gutter: stable;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-optical-sizing: auto;
+    line-height: 1.7;
+    font-size: clamp(16px, 0.5vw + 0.9rem, 18px);
+    font-variant-numeric: tabular-nums;
+    background: var(--bg);
+    color: var(--fg);
+}
+
+.logo {
+    text-align: center;
+    margin: var(--space-12) auto var(--space-4);
+}
+
+.logo a {
+    text-decoration: none;
+}
+
+a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--link-underline);
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+}
+
+a:hover {
+    text-decoration-color: currentColor;
+}
+
+a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* Subheading style used under the H1 on landing */
+.subhead {
+    margin-top: var(--space-1);
+    color: var(--muted);
+}
+
+footer {
+    margin-top: var(--space-10);
+    font-family: var(--font-monospace);
+    font-size: 14px;
+    text-align: center;
+    padding: var(--space-5) 0;
+    border-top: 1px solid var(--border);
+}
+
+.navbar {
+    margin-bottom: var(--space-8);
+    font-family: var(--font-monospace);
+}
+
+.navbar ul {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    justify-content: center;
+    gap: var(--space-8);
+}
+
+.navbar a {
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 600;
+    font-family: var(--font-monospace);
+    letter-spacing: -0.005em;
+}
+
+h1 {
+    text-align: center;
+    line-height: 1.15;
+    margin: var(--space-4) 0 var(--space-2);
+    font-size: clamp(2rem, 2vw + 1.2rem, 2.6rem);
+}
+
+h2 {
+    line-height: 1.2;
+    margin-top: var(--space-8);
+    margin-bottom: var(--space-2);
+    font-size: clamp(1.5rem, 1.3vw + 1.1rem, 2.1rem);
+}
+
+h3 {
+    line-height: 1.25;
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-2);
+    font-size: 1.25rem;
+}
+
+h4 {
+    margin-top: var(--space-5);
+    margin-bottom: var(--space-2);
+    font-size: 1.125rem;
+}
+
+h5 {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-1);
+    font-size: 1.025rem;
+}
+
+h6 {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-1);
+    font-size: 0.95rem;
+    opacity: 0.85;
+}
+
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Typography & content spacing */
+p {
+    margin: var(--space-3) 0;
+}
+
+ul,
+ol {
+    padding-left: var(--space-6);
+    margin: var(--space-3) 0;
+}
+
+ul {
+    list-style: disc outside;
+}
+
+ol {
+    list-style: decimal outside;
+}
+
+li::marker {
+    color: var(--muted);
+}
+
+li {
+    margin: var(--space-1) 0;
+}
+
+hr {
+    height: 1px;
+    border: 0;
+    margin: var(--space-8) 0;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+blockquote {
+    margin: var(--space-5) 0;
+    padding: var(--space-3) var(--space-4);
+    border-left: 4px solid var(--border);
+    background: var(--blockquote-bg);
+    color: var(--muted);
+}
+
+code,
+pre,
+kbd,
+samp {
+    font-family: var(--font-monospace);
+}
+
+code {
+    background: var(--code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 6px;
+}
+
+pre {
+    background: var(--code-bg);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: auto;
+    margin: var(--space-4) 0;
+    position: relative;
+    /* for copy button */
+}
+
+pre code {
+    background: transparent;
+    padding: 0;
+}
+
+/* Override inline shiki theme background for readability */
+pre.astro-code {
+    background: var(--code-bg) !important;
+    color: inherit !important;
+    border: 1px solid var(--border);
+}
+
+/* (removed duplicate early anchor + copy button block) */
+
+pre.astro-code code {
+    background: transparent !important;
+}
+
+/* Copy button, minimal */
+.copy-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 2px 8px;
+    font: inherit;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: inherit;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 120ms ease-in-out, background 120ms;
+}
+
+pre:hover .copy-btn,
+pre:focus-within .copy-btn {
+    opacity: 1;
+}
+
+.copy-btn:hover {
+    background: #f2f2f2;
+}
+
+.copy-btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.copy-btn.copied {
+    background: #eaeaea;
+}
+
+/* Heading anchors */
+h2,
+h3,
+h4 {
+    position: relative;
+    scroll-margin-top: var(--space-6);
+}
+
+.h-anchor {
+    margin-left: var(--space-2);
+    opacity: 0;
+    text-decoration: none;
+    color: var(--muted);
+}
+
+h2:hover .h-anchor,
+h3:hover .h-anchor,
+h4:hover .h-anchor,
+h2:focus-within .h-anchor,
+h3:focus-within .h-anchor,
+h4:focus-within .h-anchor {
+    opacity: .8;
+}
+
+.h-anchor:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    opacity: 1;
+}
+
+/* Footnotes */
+.footnotes {
+    font-size: 0.9em;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    margin-top: var(--space-8);
+    padding-top: var(--space-2);
+}
+
+.footnotes ol {
+    padding-left: var(--space-5);
+}
+
+.footnotes li {
+    margin: var(--space-2) 0;
+}
+
+.footnotes a.backref {
+    margin-left: var(--space-1);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--border);
+}
+
+/* Mobile: allow wrapping long code */
+@media (max-width: 640px) {
+    pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Print: simple black on white, single column */
+@media print {
+    :root {
+        color-scheme: light only;
+    }
+
+    body {
+        background: #fff;
+        color: #000;
+        font-size: 12pt;
+    }
+
+    .container {
+        max-width: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .navbar,
+    footer,
+    .copy-btn {
+        display: none !important;
+    }
+
+    hr {
+        background: #000;
+        opacity: .2;
+    }
+}
+
+/* Dark mode removed: site is light-only for now */

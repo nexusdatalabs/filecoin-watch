@@ -1,22 +1,129 @@
+---
+import "../styles.css";
+import { Font } from "astro:assets";
+---
+
 <!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>Filecoin Watch</title>
+		<Font cssVariable="--font-jetbrains-mono" preload />
 	</head>
 	<body>
-		<slot />
+		<main class="container">
+			<slot />
+		</main>
+		<footer>
+			© {new Date().getFullYear()} <a href="https://filecoindataportal.xyz/">Filecoin Data Portal</a>
+		</footer>
+		<script type="module" is:inline>
+			// Client-side enhancements: heading anchors, copy buttons, footnotes.
+			const onReady = (fn) => {
+				if (document.readyState === "loading") {
+					document.addEventListener("DOMContentLoaded", fn, {
+						once: true,
+					});
+				} else {
+					fn();
+				}
+			};
+			function addHeadingAnchors(root = document) {
+				const headings = root.querySelectorAll(
+					"main.container h2, main.container h3, main.container h4",
+				);
+				headings.forEach((h) => {
+					if (!h.id) {
+						const slug = (h.textContent || "")
+							.trim()
+							.toLowerCase()
+							.replace(/[^a-z0-9\s-]/g, "")
+							.replace(/\s+/g, "-");
+						if (slug) h.id = slug;
+					}
+					if (!h.id) return;
+					if (h.querySelector(":scope > a.h-anchor")) return;
+					const a = document.createElement("a");
+					a.className = "h-anchor";
+					a.href = `#${h.id}`;
+					a.setAttribute("aria-label", "Permalink to this heading");
+					a.textContent = "#";
+					a.tabIndex = -1;
+					h.appendChild(a);
+				});
+			}
+			function addCopyButtons(root = document) {
+				const blocks = root.querySelectorAll("pre.astro-code");
+				blocks.forEach((pre) => {
+					if (pre.querySelector(":scope > button.copy-btn")) return;
+					const btn = document.createElement("button");
+					btn.type = "button";
+					btn.className = "copy-btn";
+					btn.setAttribute("aria-label", "Copy code to clipboard");
+					btn.textContent = "Copy";
+					btn.addEventListener("click", async () => {
+						try {
+							const text = (pre.innerText || "").replace(
+								/\n\n$/,
+								"\n",
+							);
+							await navigator.clipboard.writeText(text);
+							const prev = btn.textContent;
+							btn.textContent = "Copied";
+							btn.classList.add("copied");
+							setTimeout(() => {
+								btn.textContent = prev || "Copy";
+								btn.classList.remove("copied");
+							}, 1400);
+						} catch (err) {
+							console.error("Copy failed", err);
+							btn.textContent = "Error";
+							setTimeout(() => {
+								btn.textContent = "Copy";
+							}, 1200);
+						}
+					});
+					pre.appendChild(btn);
+				});
+			}
+			function enhanceFootnotes(root = document) {
+				const supLinks = Array.from(
+					root.querySelectorAll(
+						'sup > a[href^="#fn"], sup > a[href^="#user-content-fn"], a.footnote-ref',
+					),
+				);
+				supLinks.forEach((a) => {
+					const m = a.getAttribute("href")?.match(/fn-?(\d+)/);
+					const num = m && m[1];
+					if (!num) return;
+					const sup = a.closest("sup") || a;
+					if (!sup.id) sup.id = `fnref-${num}`;
+				});
+				const listItems = root.querySelectorAll(
+					'.footnotes li[id^="fn"], .footnotes li[id^="user-content-fn"], li.footnote',
+				);
+				listItems.forEach((li) => {
+					const m = li.id.match(/fn-?(\d+)/);
+					const num = m && m[1];
+					if (!num) return;
+					if (li.querySelector(":scope > a.backref")) return;
+					const back = document.createElement("a");
+					back.className = "backref";
+					back.href = `#fnref-${num}`;
+					back.setAttribute("aria-label", "Back to content");
+					back.textContent = "Back ↑";
+					li.appendChild(document.createTextNode(" "));
+					li.appendChild(back);
+				});
+			}
+			onReady(() => {
+				addHeadingAnchors();
+				addCopyButtons();
+				enhanceFootnotes();
+			});
+		</script>
 	</body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
