@@ -27,167 +27,165 @@ const len = Math.min(x.length, y.length);
 const labels = x.slice(0, len);
 const values = y.slice(0, len);
 
-const yMinVal = yMin ?? null;
-const yMaxVal = yMax ?? null;
+// Safer data attrs: only emit when defined
+const dataAttrs: Record<string, any> = {};
+if (yMin !== undefined) dataAttrs["data-y-min"] = yMin;
+if (yMax !== undefined) dataAttrs["data-y-max"] = yMax;
+
+// Per-instance scope id to target only this canvas
+const cid = `lc-${Math.random().toString(36).slice(2, 9)}`;
 ---
 
 <figure class="lc-figure">
   {label && <figcaption class="lc-caption">{label}</figcaption>}
   <div class="chart-container" style={`--height:${height}px`}>
-  <canvas
-    class="lc-chart"
-    role="img"
-    aria-label={label}
-    data-labels={JSON.stringify(labels)}
-    data-values={JSON.stringify(values)}
-    data-color={color}
-    data-y-min={yMinVal}
-    data-y-max={yMaxVal}>A simple line chart</canvas
-  >
-  <!-- external tooltip node will be injected here -->
-  <div class="chartjs-terminal-tooltip" aria-hidden="true"></div>
+    <canvas
+      id={cid}
+      class="lc-chart"
+      role="img"
+      aria-label={label}
+      data-labels={JSON.stringify(labels)}
+      data-values={JSON.stringify(values)}
+      data-color={color}
+      {...dataAttrs}>A simple line chart</canvas
+    >
+    <!-- external tooltip node will be injected here -->
+    <div class="chartjs-terminal-tooltip" aria-hidden="true"></div>
   </div>
 </figure>
 
 <script>
   import Chart from "chart.js/auto";
+  // Global initializer; caller ensures single call per element
+  const w = window as any;
+  w.__lcInit = (el: HTMLCanvasElement) => {
+    if (!el) return;
 
-  const init = () => {
-    const nodes =
-      document.querySelectorAll<HTMLCanvasElement>("canvas.lc-chart");
-    nodes.forEach((el) => {
-      if ((el as any)._lcInit) return; // prevent double-inits (HMR)
+    const labels = safeParse<Array<string | number>>(el.dataset.labels, []);
+    const values = safeParse<number[]>(el.dataset.values, []);
 
-      const labels = safeParse(el.dataset.labels, [] as Array<string | number>);
-      const values = safeParse(el.dataset.values, [] as number[]);
+    const css = getComputedStyle(document.documentElement);
+    const mono = resolveColor(css.getPropertyValue("--fg"), "#111");
+    const border = resolveColor(css.getPropertyValue("--border"), "#e5e5e5");
+    const fontFamily = (
+      getComputedStyle(document.body).getPropertyValue("font-family") ||
+      css.getPropertyValue("--font-monospace") ||
+      "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    ).trim();
 
-      // Resolve site design tokens → monochrome colors + font
-      const css = getComputedStyle(document.documentElement);
-      const mono = resolveColor(css.getPropertyValue("--fg"), "#111");
-      const border = resolveColor(css.getPropertyValue("--border"), "#e5e5e5");
-      const fontFamily = (
-        getComputedStyle(document.body).getPropertyValue("font-family") ||
-        css.getPropertyValue("--font-monospace") ||
-        "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-      ).trim();
+    const userColor = el.dataset.color && el.dataset.color.trim();
+    const lineColor = userColor ? userColor : mono;
 
-      const userColor = el.dataset.color && el.dataset.color.trim();
-      const lineColor = userColor ? userColor : mono;
+    const yMin =
+      el.dataset.yMin !== undefined ? Number(el.dataset.yMin) : undefined;
+    const yMax =
+      el.dataset.yMax !== undefined ? Number(el.dataset.yMax) : undefined;
 
-      const yMin = el.dataset.yMin ? Number(el.dataset.yMin) : undefined;
-      const yMax = el.dataset.yMax ? Number(el.dataset.yMax) : undefined;
+    const tooltipEl =
+      el.parentElement?.querySelector<HTMLDivElement>(
+        ".chartjs-terminal-tooltip",
+      ) || null;
 
-      // Local defaults (avoid global side effects)
-      Chart.defaults.font.family = fontFamily;
-      Chart.defaults.color = mono;
-      Chart.defaults.borderColor = border;
-
-      // External tooltip element (terminal-like)
-      const tooltipEl = (
-        el.parentElement as HTMLElement
-      ).querySelector<HTMLDivElement>(".chartjs-terminal-tooltip")!;
-
-      const terminalTooltip = (ctx: any) => {
-        const { chart, tooltip } = ctx;
-        if (!tooltipEl) return;
-        if (tooltip.opacity === 0) {
-          tooltipEl.classList.remove("show");
-          return;
-        }
-        tooltipEl.classList.add("show");
-        const dp = tooltip.dataPoints?.[0];
-        const x = dp?.label ?? "";
-        const y = dp?.formattedValue ?? "";
-        tooltipEl.textContent = x && y ? `${x} :: ${y}` : "";
-        const { offsetLeft, offsetTop } = chart.canvas;
-        tooltipEl.style.left = offsetLeft + tooltip.caretX + "px";
-        tooltipEl.style.top = offsetTop + tooltip.caretY + "px";
-      };
-
-      // Vertical crosshair line plugin
-      const crosshairPlugin = {
-        id: "terminalCrosshair",
-        afterDatasetsDraw(c: any) {
-          const active = c.getActiveElements();
-          if (!active.length) return;
-          const x = active[0].element.x;
-          const { top, bottom } = c.chartArea;
-          const ctx = c.ctx;
-          ctx.save();
-          ctx.strokeStyle = mono;
-          ctx.lineWidth = 1;
-          ctx.setLineDash([3, 3]);
-          ctx.beginPath();
-          ctx.moveTo(x, top);
-          ctx.lineTo(x, bottom);
-          ctx.stroke();
-          ctx.restore();
-        },
-      };
-
-      const chart = new Chart(el, {
-        type: "line",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: el.getAttribute("aria-label") || "Series",
-              data: values,
-              borderColor: lineColor,
-              pointRadius: 0,
-              pointHoverRadius: 0,
-              borderWidth: 2,
-              tension: 0.25,
-              fill: false,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: false,
-          transitions: {
-            active: { animation: { duration: 0 } },
-            show: { animations: { x: { duration: 0 }, y: { duration: 0 } } },
-            hide: { animations: { x: { duration: 0 }, y: { duration: 0 } } },
-          },
-          interaction: { mode: "index", intersect: false, axis: "x" },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              enabled: false, // Use external tooltip for terminal feel
-              external: terminalTooltip,
-            },
-          },
-          scales: {
-            x: {
-              display: true,
-              grid: { color: border },
-              ticks: { maxTicksLimit: 8, color: mono },
-            },
-            y: {
-              display: true,
-              beginAtZero: true,
-              min: yMin,
-              max: yMax,
-              ticks: { maxTicksLimit: 6, color: mono },
-              grid: { color: border },
-            },
-          },
-        },
-        plugins: [crosshairPlugin],
-      });
-
-      (el as any)._lcInit = true;
-
-      if (import.meta.hot) {
-        import.meta.hot.dispose(() => chart.destroy());
+    const terminalTooltip = (ctx: any) => {
+      const { chart, tooltip } = ctx;
+      if (!tooltipEl) return;
+      if (tooltip.opacity === 0) {
+        tooltipEl.classList.remove("show");
+        return;
       }
-      addEventListener("astro:before-swap", () => chart.destroy(), {
-        once: true,
-      });
+      tooltipEl.classList.add("show");
+      const dp = tooltip.dataPoints?.[0];
+      const x = dp?.label ?? "";
+      const y = dp?.formattedValue ?? "";
+      tooltipEl.textContent = x && y ? `${x} :: ${y}` : "";
+      const { offsetLeft, offsetTop } = chart.canvas as HTMLCanvasElement;
+      tooltipEl.style.left = offsetLeft + tooltip.caretX + "px";
+      tooltipEl.style.top = offsetTop + tooltip.caretY + "px";
+    };
+
+    const crosshairPlugin = {
+      id: "terminalCrosshair",
+      afterDatasetsDraw(c: any) {
+        const active = c.getActiveElements();
+        if (!active.length) return;
+        const x = active[0].element.x;
+        const { top, bottom } = c.chartArea;
+        const ctx = c.ctx;
+        ctx.save();
+        ctx.strokeStyle = mono;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(x, top);
+        ctx.lineTo(x, bottom);
+        ctx.stroke();
+        ctx.restore();
+      },
+    };
+
+    const chart = new Chart(el, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: el.getAttribute("aria-label") || "Series",
+            data: values,
+            borderColor: lineColor,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            borderWidth: 2,
+            tension: 0.25,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        interaction: { mode: "index", intersect: false, axis: "x" },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false, external: terminalTooltip },
+        },
+        scales: {
+          x: {
+            display: true,
+            grid: { color: border },
+            ticks: {
+              maxTicksLimit: 8,
+              color: mono,
+              font: { family: fontFamily },
+            },
+          },
+          y: {
+            display: true,
+            beginAtZero: true,
+            min: yMin,
+            max: yMax,
+            ticks: {
+              maxTicksLimit: 6,
+              color: mono,
+              font: { family: fontFamily },
+            },
+            grid: { color: border },
+          },
+        },
+      },
+      plugins: [crosshairPlugin],
+    });
+
+    if (import.meta.hot) import.meta.hot.dispose(() => chart.destroy());
+    addEventListener("astro:before-swap", () => chart.destroy(), {
+      once: true,
     });
   };
+
+  // Flush queued elements (if any) from inline calls
+  if (Array.isArray(w.__lcQueue) && typeof w.__lcInit === "function") {
+    w.__lcQueue.splice(0).forEach((el: HTMLCanvasElement) => w.__lcInit(el));
+  }
 
   function safeParse<T>(raw: string | undefined, fallback: T): T {
     if (!raw) return fallback;
@@ -197,21 +195,30 @@ const yMaxVal = yMax ?? null;
       return fallback;
     }
   }
-
   function resolveColor(v: string, fallback: string): string {
     const s = (v || "").trim();
     return s || fallback;
   }
+</script>
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
-  } else {
-    init();
-  }
+<script define:vars={{ cid }}>
+  (function () {
+    const el = document.getElementById(cid);
+    if (!el) return;
+    const w = window;
+    const init = w["__lcInit"];
+    if (typeof init === "function") {
+      init(el);
+    } else {
+      (w["__lcQueue"] = w["__lcQueue"] || []).push(el);
+    }
+  })();
 </script>
 
 <style>
-  .lc-figure { margin: 0; }
+  .lc-figure {
+    margin: 0;
+  }
   .lc-caption {
     margin: 0 0 var(--space-2);
     color: var(--fg);

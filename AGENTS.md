@@ -22,7 +22,7 @@
 
 - `npm install`: Install dependencies.
 - `npm run dev`: Start local dev server at `http://localhost:4321`.
-- `npm run build`: Build the site to `dist/`.
+- `npm run build`: Build the site to `dist/`. Can be done with `--ignore-scripts` to use local data.
 - `npm run preview`: Serve the built site locally.
 - `npx astro check`: Type/diagnostics check for `.astro`, MDX, and TS.
 
@@ -30,6 +30,7 @@
 
 - Semantic and native HTML.
 - Keep pages declarative; prefer small, pure helpers if adding TS utilities.
+- Charts follow https://www.chartjs.org/docs/ best practices.
 
 ## Testing Guidelines
 
