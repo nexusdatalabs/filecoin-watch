@@ -1,218 +1,122 @@
 ---
-// Simple reusable line chart using Chart.js
-// Simplified, monochrome, terminal-like hover
-// Props: x, y, label, height (color kept for compat but optional)
 export interface Props {
-  x: Array<number | string>;
-  y: number[];
+  data: Array<Record<string, unknown>>;
+  x: string;
+  y: string;
   label?: string;
-  color?: string; // optional override (defaults to site monochrome)
-  height?: number; // in px, container height
-  yMin?: number;
-  yMax?: number;
+  cid?: string;
 }
 
 const {
-  x = [],
-  y = [],
+  data = [],
+  x,
+  y,
   label = "Series",
-  color,
-  height = 240,
-  yMin,
-  yMax,
+  cid: passedCid,
 } = Astro.props as Props;
 
-// Align arrays for Chart.js
-const len = Math.min(x.length, y.length);
-const labels = x.slice(0, len);
-const values = y.slice(0, len);
+// Unique chart id per component instance
+const cid = passedCid ?? `linechart-${Math.random().toString(36).slice(2, 10)}`;
 
-// Safer data attrs: only emit when defined
-const dataAttrs: Record<string, any> = {};
-if (yMin !== undefined) dataAttrs["data-y-min"] = yMin;
-if (yMax !== undefined) dataAttrs["data-y-max"] = yMax;
+const labels = (Array.isArray(data) ? data : [])
+  .map((d) => (d && typeof d === "object" ? (d as any)[x] : undefined))
+  .filter((v) => v !== undefined);
 
-// Per-instance scope id to target only this canvas
-const cid = `lc-${Math.random().toString(36).slice(2, 9)}`;
+const values = (Array.isArray(data) ? data : []).map((d) =>
+  d && typeof d === "object" ? Number((d as any)[y] ?? 0) : 0,
+);
 ---
 
-<figure class="lc-figure">
-  {label && <figcaption class="lc-caption">{label}</figcaption>}
-  <div class="chart-container" style={`--height:${height}px`}>
-    <canvas
-      id={cid}
-      class="lc-chart"
-      role="img"
-      aria-label={label}
-      data-labels={JSON.stringify(labels)}
-      data-values={JSON.stringify(values)}
-      data-color={color}
-      {...dataAttrs}>A simple line chart</canvas
-    >
-    <!-- external tooltip node will be injected here -->
-    <div class="chartjs-terminal-tooltip" aria-hidden="true"></div>
-  </div>
-</figure>
+<div>
+  <canvas
+    id={cid}
+    data-cid={cid}
+    data-x={JSON.stringify(labels)}
+    data-y={JSON.stringify(values)}
+    data-label={label}
+    height="280"
+  >
+  </canvas>
+</div>
 
 <script>
   import Chart from "chart.js/auto";
-  // Global initializer; caller ensures single call per element
-  const w = window as any;
-  w.__lcInit = (el: HTMLCanvasElement) => {
-    if (!el) return;
 
-    const labels = safeParse<Array<string | number>>(el.dataset.labels, []);
-    const values = safeParse<number[]>(el.dataset.values, []);
+  // Initialize all LineChart canvases on the page
+  const canvases = Array.from(
+    document.querySelectorAll(
+      "canvas[data-cid][data-x][data-y]:not([data-initialized])",
+    ),
+  ) as HTMLCanvasElement[];
 
-    const css = getComputedStyle(document.documentElement);
-    const mono = resolveColor(css.getPropertyValue("--fg"), "#111");
-    const border = resolveColor(css.getPropertyValue("--border"), "#e5e5e5");
-    const fontFamily = (
-      getComputedStyle(document.body).getPropertyValue("font-family") ||
-      css.getPropertyValue("--font-monospace") ||
-      "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-    ).trim();
+  if (canvases.length === 0) {
+    // Nothing to do
+  }
 
-    const userColor = el.dataset.color && el.dataset.color.trim();
-    const lineColor = userColor ? userColor : mono;
+  Chart.defaults.font.family = "JetBrains Mono, monospace";
 
-    const yMin =
-      el.dataset.yMin !== undefined ? Number(el.dataset.yMin) : undefined;
-    const yMax =
-      el.dataset.yMax !== undefined ? Number(el.dataset.yMax) : undefined;
+  for (const canvas of canvases) {
+    const x = JSON.parse(canvas.dataset.x || "[]");
+    const y = JSON.parse(canvas.dataset.y || "[]");
+    const label = canvas.dataset.label || undefined;
 
-    const tooltipEl =
-      el.parentElement?.querySelector<HTMLDivElement>(
-        ".chartjs-terminal-tooltip",
-      ) || null;
+    const dataset: any = { data: y };
+    if (label) dataset.label = label;
 
-    const terminalTooltip = (ctx: any) => {
-      const { chart, tooltip } = ctx;
-      if (!tooltipEl) return;
-      if (tooltip.opacity === 0) {
-        tooltipEl.classList.remove("show");
-        return;
-      }
-      tooltipEl.classList.add("show");
-      const dp = tooltip.dataPoints?.[0];
-      const x = dp?.label ?? "";
-      const y = dp?.formattedValue ?? "";
-      tooltipEl.textContent = x && y ? `${x} :: ${y}` : "";
-      const { offsetLeft, offsetTop } = chart.canvas as HTMLCanvasElement;
-      tooltipEl.style.left = offsetLeft + tooltip.caretX + "px";
-      tooltipEl.style.top = offsetTop + tooltip.caretY + "px";
-    };
-
-    const crosshairPlugin = {
-      id: "terminalCrosshair",
-      afterDatasetsDraw(c: any) {
-        const active = c.getActiveElements();
-        if (!active.length) return;
-        const x = active[0].element.x;
-        const { top, bottom } = c.chartArea;
-        const ctx = c.ctx;
-        ctx.save();
-        ctx.strokeStyle = mono;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 3]);
-        ctx.beginPath();
-        ctx.moveTo(x, top);
-        ctx.lineTo(x, bottom);
-        ctx.stroke();
-        ctx.restore();
-      },
-    };
-
-    const chart = new Chart(el, {
+    new Chart(canvas as any, {
       type: "line",
       data: {
-        labels,
+        labels: x,
         datasets: [
           {
-            label: el.getAttribute("aria-label") || "Series",
-            data: values,
-            borderColor: lineColor,
+            label: label || undefined,
+            data: dataset.data,
+            borderColor: "#000",
             pointRadius: 0,
             pointHoverRadius: 0,
             borderWidth: 2,
-            tension: 0.25,
-            fill: false,
+            fill: true,
           },
         ],
       },
+
       options: {
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
         interaction: { mode: "index", intersect: false, axis: "x" },
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: false, external: terminalTooltip },
-        },
         scales: {
-          x: {
-            display: true,
-            grid: { color: border },
-            ticks: {
-              maxTicksLimit: 8,
-              color: mono,
-              font: { family: fontFamily },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: label || "",
             },
           },
-          y: {
-            display: true,
-            beginAtZero: true,
-            min: yMin,
-            max: yMax,
+          x: {
             ticks: {
+              autoSkip: true,
               maxTicksLimit: 6,
-              color: mono,
-              font: { family: fontFamily },
             },
-            grid: { color: border },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { cornerRadius: 0 },
+          title: {
+            display: true,
+            text: label || "",
+            // align: "start",
+            fullSize: true,
+            font: { size: 18, weight: "normal" },
           },
         },
       },
-      plugins: [crosshairPlugin],
     });
 
-    if (import.meta.hot) import.meta.hot.dispose(() => chart.destroy());
-    addEventListener("astro:before-swap", () => chart.destroy(), {
-      once: true,
-    });
-  };
-
-  // Flush queued elements (if any) from inline calls
-  if (Array.isArray(w.__lcQueue) && typeof w.__lcInit === "function") {
-    w.__lcQueue.splice(0).forEach((el: HTMLCanvasElement) => w.__lcInit(el));
+    // Mark as initialized to avoid double-instantiation
+    canvas.dataset.initialized = "1";
   }
-
-  function safeParse<T>(raw: string | undefined, fallback: T): T {
-    if (!raw) return fallback;
-    try {
-      return JSON.parse(raw) as T;
-    } catch {
-      return fallback;
-    }
-  }
-  function resolveColor(v: string, fallback: string): string {
-    const s = (v || "").trim();
-    return s || fallback;
-  }
-</script>
-
-<script define:vars={{ cid }}>
-  (function () {
-    const el = document.getElementById(cid);
-    if (!el) return;
-    const w = window;
-    const init = w["__lcInit"];
-    if (typeof init === "function") {
-      init(el);
-    } else {
-      (w["__lcQueue"] = w["__lcQueue"] || []).push(el);
-    }
-  })();
 </script>
 
 <style>

@@ -21,23 +21,22 @@ export const latestEntries = (() => {
 
 export const series = (() => {
   const lines = csvText.trim().split(/\r?\n/);
-  if (lines.length < 2) return { x: [], y: [], label: "" };
+  if (lines.length < 2) return [];
   const headers = lines.shift().split(",");
   const dateIdx = headers.indexOf("date");
-  const metric = "providers_with_power";
-  const metricIdx = headers.indexOf(metric);
-  if (metricIdx === -1 || dateIdx === -1) return { x: [], y: [], label: metric };
+  if (dateIdx === -1) return [];
 
-  const rows = lines
-    .map((line) => line.split(","))
-    .filter((cols) => cols.length > metricIdx && cols[metricIdx] !== "");
-
+  const rows = lines.map((line) => line.split(","));
   rows.sort((a, b) => (a[dateIdx] < b[dateIdx] ? -1 : a[dateIdx] > b[dateIdx] ? 1 : 0));
   const last = rows.slice(-180);
 
-  const x = last.map((r) => r[dateIdx]);
-  const y = last.map((r) => Number(r[metricIdx] || 0));
-  return { x, y, label: "Providers with power" };
+  return last.map((cols) => {
+    const rec = {};
+    headers.forEach((h, i) => {
+      rec[h] = i === dateIdx ? cols[i] : Number(cols[i] || 0);
+    });
+    return rec;
+  });
 })();
 
 <header class="masthead">
@@ -75,7 +74,11 @@ Filecoin Watch is a tiny site that creates essential Filecoin reports across ent
 
 ## Charts
 
-<LineChart x={series.x} y={series.y} label={series.label} height={220} />
+<LineChart data={series} x="date" y="unique_deal_making_clients" label="Unique deal-making clients" />
+<LineChart data={series} x="date" y="unique_deal_making_providers" label="Unique deal-making providers" />
+<LineChart data={series} x="date" y="clients_with_active_deals" label="Clients with active deals" />
+<LineChart data={series} x="date" y="providers_with_active_deals" label="Providers with active deals" />
+<LineChart data={series} x="date" y="providers_with_power" label="Providers with power" />
 
 ## Status
 
