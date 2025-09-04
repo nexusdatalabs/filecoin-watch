@@ -3,6 +3,7 @@ layout: "../layouts/Layout.astro"
 ---
 
 import csvText from "../data/daily_metrics.csv?raw";
+import LineChart from "../components/LineChart.astro";
 
 export const latestEntries = (() => {
   const lines = csvText.trim().split(/\r?\n/);
@@ -16,6 +17,27 @@ export const latestEntries = (() => {
     return cur[dateIdx] > best[dateIdx] ? cur : best;
   }, null);
   return headers.map((h, i) => [h, latestRow?.[i] ?? ""]);
+})();
+
+export const series = (() => {
+  const lines = csvText.trim().split(/\r?\n/);
+  if (lines.length < 2) return { x: [], y: [], label: "" };
+  const headers = lines.shift().split(",");
+  const dateIdx = headers.indexOf("date");
+  const metric = "providers_with_power";
+  const metricIdx = headers.indexOf(metric);
+  if (metricIdx === -1 || dateIdx === -1) return { x: [], y: [], label: metric };
+
+  const rows = lines
+    .map((line) => line.split(","))
+    .filter((cols) => cols.length > metricIdx && cols[metricIdx] !== "");
+
+  rows.sort((a, b) => (a[dateIdx] < b[dateIdx] ? -1 : a[dateIdx] > b[dateIdx] ? 1 : 0));
+  const last = rows.slice(-180);
+
+  const x = last.map((r) => r[dateIdx]);
+  const y = last.map((r) => Number(r[metricIdx] || 0));
+  return { x, y, label: "Providers with power" };
 })();
 
 <header class="masthead">
@@ -50,6 +72,10 @@ Filecoin Watch is a tiny site that creates essential Filecoin reports across ent
     latestEntries.map(([key, value]) => (<li><strong>{key}:</strong> {value}</li>))
   }
 </ul>
+
+## Charts
+
+<LineChart x={series.x} y={series.y} label={series.label} height={220} />
 
 ## Status
 
