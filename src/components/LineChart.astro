@@ -18,6 +18,14 @@ const {
 // Unique chart id per component instance
 const cid = passedCid ?? `linechart-${Math.random().toString(36).slice(2, 10)}`;
 
+// Stable in-page anchor id derived from label or `y`
+const slugify = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+const anchorId = slugify(label || y);
+
 const labels = (Array.isArray(data) ? data : [])
   .map((d) => (d && typeof d === "object" ? (d as any)[x] : undefined))
   .filter((v) => v !== undefined);
@@ -30,8 +38,15 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
 });
 ---
 
-<figure class="lc-figure">
-  {label && <figcaption class="lc-caption">{label}</figcaption>}
+<figure id={anchorId} class="lc-figure">
+  {
+    label && (
+      <figcaption class="lc-caption">
+        <a href={`#${anchorId}`} class="lc-caption-link" aria-label={`${label} permalink`}>{label}</a>
+        <a href={`#${anchorId}`} class="h-anchor" aria-label={`${label} anchor`}>#</a>
+      </figcaption>
+    )
+  }
   <div class="chart-container">
     <canvas
       data-cid={cid}
@@ -170,6 +185,8 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
 <style>
   .lc-figure {
     margin: 0;
+    /* Ensure deep links scroll to a comfortable position */
+    scroll-margin-top: var(--space-6);
   }
   .lc-caption {
     margin: 0 0 var(--space-2);
@@ -178,6 +195,25 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
     font-weight: 600;
     letter-spacing: -0.005em;
     font-size: clamp(0.95rem, 0.6vw + 0.8rem, 1.15rem);
+  }
+  .lc-caption-link {
+    text-decoration: none;
+  }
+  .lc-caption-link:hover,
+  .lc-caption-link:focus {
+    text-decoration: underline;
+  }
+  /* Compact # link: close spacing, hidden by default, never underlined */
+  .lc-caption .h-anchor {
+    margin-left: 0.2em;
+    color: var(--muted);
+    opacity: 0;
+    text-decoration: none; /* override global anchor underline */
+    transition: opacity 120ms ease-in-out;
+  }
+  .lc-caption:hover .h-anchor,
+  .lc-caption .h-anchor:focus-visible {
+    opacity: .8;
   }
   .chart-container {
     position: relative;
