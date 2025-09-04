@@ -82,7 +82,7 @@ body {
 
 .logo {
     text-align: center;
-    margin: var(--space-12) auto var(--space-4);
+    margin: var(--space-6) auto var(--space-4);
 }
 
 .logo a {
