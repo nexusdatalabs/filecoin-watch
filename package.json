@@ -7,11 +7,13 @@
     "prebuild": "npm run data",
     "build": "astro build",
     "preview": "astro preview",
+    "dev": "astro dev",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.4",
-    "astro": "^5.13.5"
+    "astro": "^5.13.5",
+    "chart.js": "^4.5.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
