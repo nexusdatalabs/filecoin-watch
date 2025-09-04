@@ -22,25 +22,31 @@ const labels = (Array.isArray(data) ? data : [])
   .map((d) => (d && typeof d === "object" ? (d as any)[x] : undefined))
   .filter((v) => v !== undefined);
 
-const values = (Array.isArray(data) ? data : []).map((d) =>
-  d && typeof d === "object" ? Number((d as any)[y] ?? 0) : 0,
-);
+const values = (Array.isArray(data) ? data : []).map((d) => {
+  const v = d && typeof d === "object" ? (d as any)[y] : undefined;
+  if (v === undefined || v === null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+});
 ---
 
-<div>
-  <canvas
-    id={cid}
-    data-cid={cid}
-    data-x={JSON.stringify(labels)}
-    data-y={JSON.stringify(values)}
-    data-label={label}
-    height="280"
-  >
-  </canvas>
-</div>
+<figure class="lc-figure">
+  {label && <figcaption class="lc-caption">{label}</figcaption>}
+  <div class="chart-container">
+    <canvas
+      data-cid={cid}
+      data-x={JSON.stringify(labels)}
+      data-y={JSON.stringify(values)}
+      data-label={label}
+    >
+    </canvas>
+  </div>
+</figure>
 
 <script>
   import Chart from "chart.js/auto";
+  // Date adapter for Chart.js time scale
+  import "chartjs-adapter-date-fns";
 
   // Initialize all LineChart canvases on the page
   const canvases = Array.from(
@@ -49,33 +55,41 @@ const values = (Array.isArray(data) ? data : []).map((d) =>
     ),
   ) as HTMLCanvasElement[];
 
-  if (canvases.length === 0) {
-    // Nothing to do
-  }
-
   Chart.defaults.font.family = "JetBrains Mono, monospace";
+
+  // Hardcoded colors (simple, neutral defaults)
+  const lineColor = "rgba(17, 17, 17, 0.95)"; // near-black line
+  const gridColor = "rgba(17, 17, 17, 0.15)"; // subtle grid
+  const tickColor = "rgba(17, 17, 17, 0.75)"; // dark gray ticks
+  const tooltipBg = "rgba(255, 255, 255, 0.98)"; // light tooltip bg
+  const tooltipFg = "rgba(17, 17, 17, 0.95)"; // dark tooltip fg
 
   for (const canvas of canvases) {
     const x = JSON.parse(canvas.dataset.x || "[]");
     const y = JSON.parse(canvas.dataset.y || "[]");
     const label = canvas.dataset.label || undefined;
 
-    const dataset: any = { data: y };
-    if (label) dataset.label = label;
+    // Assume `x` is always a date string in YYYY-MM-DD
+    const points = (Array.isArray(x) ? x : []).map((xi: string, i: number) => ({
+      x: xi,
+      y: y[i],
+    }));
 
     new Chart(canvas as any, {
       type: "line",
       data: {
-        labels: x,
         datasets: [
           {
             label: label || undefined,
-            data: dataset.data,
-            borderColor: "#000",
+            data: points,
+            borderColor: lineColor,
+            backgroundColor: lineColor,
+            borderWidth: 1.5,
             pointRadius: 0,
             pointHoverRadius: 0,
-            borderWidth: 2,
-            fill: true,
+            tension: 0.25,
+            spanGaps: true,
+            fill: false,
           },
         ],
       },
@@ -88,28 +102,62 @@ const values = (Array.isArray(data) ? data : []).map((d) =>
         scales: {
           y: {
             beginAtZero: true,
-            title: {
-              display: true,
-              text: label || "",
+            border: { display: false },
+            grid: {
+              color: gridColor,
+              drawOnChartArea: true,
+            },
+            ticks: {
+              color: tickColor,
+              maxTicksLimit: 5,
+              padding: 4,
             },
           },
           x: {
+            type: "time",
+            time: {
+              unit: "day",
+              tooltipFormat: "PP",
+              displayFormats: {
+                hour: "HH:mm",
+                day: "MMM d",
+                month: "MMM yyyy",
+                year: "yyyy",
+              },
+            },
+            border: { display: false },
+            grid: { display: false },
             ticks: {
+              color: tickColor,
               autoSkip: true,
               maxTicksLimit: 6,
+              maxRotation: 0,
+              minRotation: 0,
+              padding: 4,
             },
           },
         },
         plugins: {
           legend: { display: false },
-          tooltip: { cornerRadius: 0 },
-          title: {
-            display: true,
-            text: label || "",
-            // align: "start",
-            fullSize: true,
-            font: { size: 18, weight: "normal" },
+          tooltip: {
+            intersect: false,
+            displayColors: false,
+            backgroundColor: tooltipBg,
+            borderColor: tooltipFg,
+            borderWidth: 1,
+            titleColor: tooltipFg,
+            bodyColor: tooltipFg,
+            cornerRadius: 0,
+            padding: 6,
+            callbacks: {
+              label: (ctx) => {
+                const v = ctx.parsed?.y;
+                return typeof v === "number" ? v.toString() : "";
+              },
+            },
           },
+          title: { display: false },
+          decimation: { enabled: true, algorithm: "min-max" },
         },
       },
     });
@@ -139,22 +187,5 @@ const values = (Array.isArray(data) ? data : []).map((d) =>
   canvas {
     width: 100% !important;
     height: 100% !important;
-  }
-  /* Terminal-like external tooltip */
-  .chartjs-terminal-tooltip {
-    position: absolute;
-    transform: translate(-50%, -110%);
-    pointer-events: none;
-    background: var(--bg);
-    color: var(--fg);
-    border: 1px solid var(--fg);
-    font-family: var(--font-monospace);
-    font-size: 12px;
-    padding: 2px 6px;
-    white-space: nowrap;
-    opacity: 0;
-  }
-  .chartjs-terminal-tooltip.show {
-    opacity: 1;
   }
 </style>
