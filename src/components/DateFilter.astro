@@ -58,8 +58,13 @@
     if (from) fromEl.value = from;
     if (to) toEl.value = to;
 
-    fromEl.addEventListener('change', () => writeParams(fromEl.value, toEl.value));
-    toEl.addEventListener('change', () => writeParams(fromEl.value, toEl.value));
+    form.addEventListener('change', (e) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      if (t.id === 'df-from' || t.id === 'df-to') {
+        writeParams(fromEl.value, toEl.value);
+      }
+    });
 
     allTimeBtn?.addEventListener('click', () => {
       fromEl.value = '';
