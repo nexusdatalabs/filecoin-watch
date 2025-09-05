@@ -3,13 +3,14 @@ layout: "../layouts/Layout.astro"
 ---
 
 import csvText from "../data/daily_metrics.csv?raw";
+import { parse } from "csv-parse/sync";
 import LineChart from "../components/LineChart.astro";
+import DateFilter from "../components/DateFilter.astro";
 
 export const latestEntries = (() => {
-  const lines = csvText.trim().split(/\r?\n/);
-  if (lines.length < 2) return [];
-  const headers = lines.shift().split(",");
-  const rows = lines.map((line) => line.split(","));
+  const records = parse(csvText.trim(), { skip_empty_lines: true });
+  if (!records || records.length < 2) return [];
+  const [headers, ...rows] = records;
   const dateIdx = headers.indexOf("date");
   const latestRow = rows.reduce((best, cur) => {
     if (!best) return cur;
@@ -20,17 +21,15 @@ export const latestEntries = (() => {
 })();
 
 export const series = (() => {
-  const lines = csvText.trim().split(/\r?\n/);
-  if (lines.length < 2) return [];
-  const headers = lines.shift().split(",");
+  const records = parse(csvText.trim(), { skip_empty_lines: true });
+  if (!records || records.length < 2) return [];
+  const [headers, ...rows] = records;
   const dateIdx = headers.indexOf("date");
   if (dateIdx === -1) return [];
 
-  const rows = lines.map((line) => line.split(","));
   rows.sort((a, b) => (a[dateIdx] < b[dateIdx] ? -1 : a[dateIdx] > b[dateIdx] ? 1 : 0));
-  const last = rows.slice(-560);
 
-  return last.map((cols) => {
+  return rows.map((cols) => {
     const rec = {};
     headers.forEach((h, i) => {
       rec[h] = i === dateIdx ? cols[i] : Number(cols[i] || 0);
@@ -83,7 +82,9 @@ Filecoin Watch is a tiny site that creates essential Filecoin reports across ent
 
 ## Charts
 
-<div class="charts">
+<DateFilter />
+
+<div class="charts" id="charts">
   <LineChart data={series} x="date" y="unique_deal_making_clients" label="Unique deal-making clients" />
   <LineChart data={series} x="date" y="unique_deal_making_providers" label="Unique deal-making providers" />
   <LineChart data={series} x="date" y="clients_with_active_deals" label="Clients with active deals" />

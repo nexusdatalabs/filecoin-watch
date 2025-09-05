@@ -65,6 +65,44 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
   // Date adapter for Chart.js time scale
   import "chartjs-adapter-date-fns";
 
+  // Simple global registry to update all charts when date range changes
+  type Point = { x: string; y: number | null };
+  type ChartEntry = { canvas: HTMLCanvasElement; chart: any; points: Point[] };
+  const registry: Map<string, ChartEntry> = (window as any).__lcRegistry ?? new Map();
+  (window as any).__lcRegistry = registry;
+
+  const readRange = () => {
+    const sp = new URLSearchParams(location.search);
+    const from = sp.get('from') || '';
+    const to = sp.get('to') || '';
+    return { from, to };
+  };
+
+  const within = (d: string, from: string, to: string) => {
+    if (from && d < from) return false;
+    if (to && d > to) return false;
+    return true;
+  };
+
+  function applyFilterTo(entry: ChartEntry) {
+    const { from, to } = readRange();
+    const filtered = (entry.points || []).filter(p => p.x && within(p.x, from, to));
+    const ds = entry.chart?.data?.datasets?.[0];
+    if (ds) ds.data = filtered;
+    entry.chart?.update?.('none');
+  }
+
+  function applyFilterAll() {
+    registry.forEach((entry) => applyFilterTo(entry));
+  }
+
+  // Ensure we only install listeners once
+  if (!(window as any).__lcRangeListeners) {
+    (window as any).__lcRangeListeners = true;
+    window.addEventListener('datefilter:changed', applyFilterAll);
+    window.addEventListener('popstate', applyFilterAll);
+  }
+
   // Initialize all LineChart canvases on the page
   const canvases = Array.from(
     document.querySelectorAll(
@@ -90,17 +128,18 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
   const FIXED_Y_AXIS_WIDTH = 48;
 
   for (const canvas of canvases) {
+    const cid = canvas.dataset.cid as string;
     const x = JSON.parse(canvas.dataset.x || "[]");
     const y = JSON.parse(canvas.dataset.y || "[]");
     const label = canvas.dataset.label || undefined;
 
     // Assume `x` is always a date string in YYYY-MM-DD
-    const points = (Array.isArray(x) ? x : []).map((xi: string, i: number) => ({
+    const points: Point[] = (Array.isArray(x) ? x : []).map((xi: string, i: number) => ({
       x: xi,
       y: y[i],
     }));
 
-    new Chart(canvas as any, {
+    const chart = new Chart(canvas as any, {
       type: "line",
       data: {
         datasets: [
@@ -199,6 +238,10 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
         },
       },
     });
+
+    // Save original points for filtering and apply current URL range
+    registry.set(cid, { canvas, chart, points });
+    applyFilterTo(registry.get(cid)!);
 
     // Mark as initialized to avoid double-instantiation
     canvas.dataset.initialized = "1";
