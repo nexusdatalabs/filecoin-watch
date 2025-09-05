@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.0",
   "scripts": {
-    "data": "mkdir -p ./src/data && bash datasets/daily_metrics.csv.sh > ./src/data/daily_metrics.csv",
+    "data": "mkdir -p ./src/data && bash datasets/daily_metrics.csv.sh > ./src/data/daily_metrics.csv && bash datasets/clients.csv.sh > ./src/data/clients.csv",
     "prebuild": "npm run data",
     "build": "astro build",
     "preview": "astro preview",
@@ -13,6 +13,7 @@
   "dependencies": {
     "@astrojs/mdx": "^4.3.4",
     "astro": "^5.13.5",
+    "csv-parse": "^5.6.0",
     "chart.js": "^4.5.0",
     "chartjs-adapter-date-fns": "^3.0.0"
   },

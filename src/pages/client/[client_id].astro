@@ -1,0 +1,64 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import clientsCsv from "../../data/clients.csv?raw";
+import { parse } from 'csv-parse/sync';
+
+export async function getStaticPaths() {
+  const records = parse(clientsCsv, { columns: true, skip_empty_lines: true, relax_column_count: true });
+  return records.map((r: Record<string, string>) => ({ params: { client_id: r.client_id }, props: { data: r } }));
+}
+
+const { data } = Astro.props as { data: Record<string, string> };
+const title = data.client_name || data.client_id;
+---
+
+<Layout>
+  <header class="site-header">
+    <a href={import.meta.env.BASE_URL} aria-label="Filecoin Watch home">
+      <img
+        src={import.meta.env.BASE_URL + 'favicon.svg'}
+        alt="Filecoin Watch"
+        width="56"
+        height="56"
+        decoding="async"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </a>
+    <h1>Client: {title}</h1>
+    <p class="subhead">ID: {String(data.client_id)}</p>
+  </header>
+
+  <section>
+    <h2>Summary</h2>
+    <dl class="metrics">
+      <dt>Organization</dt><dd>{String(data.organization_name || '—')}</dd>
+      <dt>Region</dt><dd>{String(data.region || '—')}</dd>
+      <dt>Industry</dt><dd>{String(data.industry || '—')}</dd>
+      <dt>Website</dt><dd>{String(data.client_website || '—')}</dd>
+      <dt>Role</dt><dd>{String(data.client_role || '—')}</dd>
+      <dt>Allocator</dt><dd>{String(data.allocator_id || '—')}</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>All Fields</h2>
+    <div class="kv">
+      {Object.entries(data).map(([k, v]) => (
+        <div class="row"><div class="k">{k}</div><div class="v">{String(v)}</div></div>
+      ))}
+    </div>
+  </section>
+
+  <p><a href={import.meta.env.BASE_URL}>← Back to home</a></p>
+
+  <style>
+    .kv { display: grid; grid-template-columns: 1fr; gap: 0.25rem; }
+    .row { display: grid; grid-template-columns: 240px 1fr; gap: 1rem; align-items: start; }
+    .k { font-weight: 600; opacity: 0.9; }
+    .v { white-space: pre-wrap; word-break: break-word; }
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</Layout>
