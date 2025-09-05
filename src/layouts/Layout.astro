@@ -89,40 +89,9 @@ import { Font } from "astro:assets";
 					pre.appendChild(btn);
 				});
 			}
-			function enhanceFootnotes(root = document) {
-				const supLinks = Array.from(
-					root.querySelectorAll(
-						'sup > a[href^="#fn"], sup > a[href^="#user-content-fn"], a.footnote-ref',
-					),
-				);
-				supLinks.forEach((a) => {
-					const m = a.getAttribute("href")?.match(/fn-?(\d+)/);
-					const num = m && m[1];
-					if (!num) return;
-					const sup = a.closest("sup") || a;
-					if (!sup.id) sup.id = `fnref-${num}`;
-				});
-				const listItems = root.querySelectorAll(
-					'.footnotes li[id^="fn"], .footnotes li[id^="user-content-fn"], li.footnote',
-				);
-				listItems.forEach((li) => {
-					const m = li.id.match(/fn-?(\d+)/);
-					const num = m && m[1];
-					if (!num) return;
-					if (li.querySelector(":scope > a.backref")) return;
-					const back = document.createElement("a");
-					back.className = "backref";
-					back.href = `#fnref-${num}`;
-					back.setAttribute("aria-label", "Back to content");
-					back.textContent = "Back ↑";
-					li.appendChild(document.createTextNode(" "));
-					li.appendChild(back);
-				});
-			}
 			onReady(() => {
 				addHeadingAnchors();
 				addCopyButtons();
-				enhanceFootnotes();
 			});
 		</script>
 	</body>
