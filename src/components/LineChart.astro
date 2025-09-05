@@ -39,21 +39,23 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
 ---
 
 <figure id={anchorId} class="lc-figure">
-  {
-    label && (
-      <figcaption class="lc-caption">
-        <a href={`#${anchorId}`} class="lc-caption-link" aria-label={`${label} permalink`}>{label}</a>
-        <a href={`#${anchorId}`} class="h-anchor" aria-label={`${label} anchor`}>#</a>
-      </figcaption>
-    )
-  }
+  {label && (
+    <figcaption class="lc-caption">
+      <a href={`#${anchorId}`} class="lc-caption-link" aria-label={`${label} permalink`}>
+        {label}
+      </a>
+    </figcaption>
+  )}
   <div class="chart-container">
     <canvas
       data-cid={cid}
       data-x={JSON.stringify(labels)}
       data-y={JSON.stringify(values)}
       data-label={label}
+      role="img"
+      aria-label={label ? `${label} over time line chart` : "Line chart"}
     >
+      {label ? `${label} as a line chart` : "Line chart"}
     </canvas>
   </div>
 </figure>
@@ -70,7 +72,11 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
     ),
   ) as HTMLCanvasElement[];
 
-  Chart.defaults.font.family = "JetBrains Mono, monospace";
+  // Respect the site's configured monospace font
+  const cssFont = getComputedStyle(document.documentElement)
+    .getPropertyValue("--font-monospace")
+    .trim() || "monospace";
+  Chart.defaults.font.family = cssFont;
 
   // Hardcoded colors (simple, neutral defaults)
   const lineColor = "rgba(17, 17, 17, 0.95)"; // near-black line
@@ -184,7 +190,6 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
 
 <style>
   .lc-figure {
-    margin: 0;
     /* Ensure deep links scroll to a comfortable position */
     scroll-margin-top: var(--space-6);
   }
@@ -200,21 +205,7 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
     text-decoration: none;
   }
   .lc-caption-link:hover,
-  .lc-caption-link:focus {
-    text-decoration: underline;
-  }
-  /* Compact # link: close spacing, hidden by default, never underlined */
-  .lc-caption .h-anchor {
-    margin-left: 0.2em;
-    color: var(--muted);
-    opacity: 0;
-    text-decoration: none; /* override global anchor underline */
-    transition: opacity 120ms ease-in-out;
-  }
-  .lc-caption:hover .h-anchor,
-  .lc-caption .h-anchor:focus-visible {
-    opacity: .8;
-  }
+  .lc-caption-link:focus { text-decoration: underline; }
   .chart-container {
     position: relative;
     width: 100%;

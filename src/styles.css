@@ -8,9 +8,8 @@
     color-scheme: light only;
 
     /* Typography */
-    /* Use JetBrains Mono everywhere (project choice) */
-    --font-sans: var(--font-jetbrains-mono), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-    --font-monospace: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --font-sans: var(--font-jetbrains-mono), monospace;
+    --font-monospace: var(--font-jetbrains-mono), monospace;
 
     /* Light theme colors */
     --bg: #fff;
@@ -80,12 +79,13 @@ body {
     color: var(--fg);
 }
 
-.logo {
+/* Header */
+.site-header {
     text-align: center;
-    margin: var(--space-6) auto var(--space-4);
+    margin: var(--space-6) auto var(--space-6);
 }
 
-.logo a {
+.site-header a {
     text-decoration: none;
 }
 
@@ -106,7 +106,6 @@ a:focus-visible {
     outline-offset: 2px;
 }
 
-/* Subheading style used under the H1 on landing */
 .subhead {
     margin-top: var(--space-1);
     color: var(--muted);
@@ -121,24 +120,21 @@ footer {
     border-top: 1px solid var(--border);
 }
 
-.navbar {
-    margin-bottom: var(--space-8);
-    font-family: var(--font-monospace);
-}
-
-.navbar ul {
+.site-header .nav {
     display: flex;
     list-style: none;
     padding: 0;
+    margin: var(--space-4) 0 0;
     justify-content: center;
-    gap: var(--space-8);
+    gap: var(--space-6);
+    font-family: var(--font-monospace);
 }
 
-.navbar a {
+.site-header .nav a {
     text-decoration: none;
 }
 
-.navbar a:hover {
+.site-header .nav a:hover {
     text-decoration: underline;
 }
 
@@ -199,6 +195,30 @@ video,
 canvas {
     max-width: 100%;
     height: auto;
+}
+
+/* Definition list metrics */
+.metrics {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: var(--space-4);
+    row-gap: var(--space-1);
+    margin: var(--space-3) 0;
+}
+
+.metrics dt {
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--font-monospace);
+}
+
+.metrics dd {
+    margin: 0;
+}
+
+/* Charts spacing */
+.charts .lc-figure {
+    margin: var(--space-6) 0;
 }
 
 /* Typography & content spacing */
@@ -350,27 +370,7 @@ h4:focus-within .h-anchor {
 }
 
 /* Footnotes */
-.footnotes {
-    font-size: 0.9em;
-    color: var(--muted);
-    border-top: 1px solid var(--border);
-    margin-top: var(--space-8);
-    padding-top: var(--space-2);
-}
-
-.footnotes ol {
-    padding-left: var(--space-5);
-}
-
-.footnotes li {
-    margin: var(--space-2) 0;
-}
-
-.footnotes a.backref {
-    margin-left: var(--space-1);
-    text-decoration: none;
-    border-bottom: 1px dotted var(--border);
-}
+/* Footnotes styles removed */
 
 /* Mobile: allow wrapping long code */
 @media (max-width: 640px) {
@@ -416,7 +416,7 @@ h4:focus-within .h-anchor {
         color: inherit;
     }
 
-    .navbar,
+    .site-header nav,
     footer,
     .copy-btn {
         display: none !important;
