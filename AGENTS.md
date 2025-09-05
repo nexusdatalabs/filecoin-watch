@@ -6,6 +6,7 @@
 - Data is read from scripts under `src/data/`.
 - Only hydrate where needed (Astro islands).
 - Performant site (only load the required data, render charts appropiately, ...). Ship only the fields/points each chart needs.
+- Hydrate nothing by default; use Astro islands only where interactivity is required.
 - As vanilla as possible.
 - Follow a minimal, monospace/terminal like design aesthetic.
 

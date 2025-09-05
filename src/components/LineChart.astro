@@ -85,6 +85,10 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
   const tooltipBg = "rgba(255, 255, 255, 0.98)"; // light tooltip bg
   const tooltipFg = "rgba(17, 17, 17, 0.95)"; // dark tooltip fg
 
+  // Fixed width for the left (y) axis so all charts align.
+  // Tweak if your labels need more/less room.
+  const FIXED_Y_AXIS_WIDTH = 48;
+
   for (const canvas of canvases) {
     const x = JSON.parse(canvas.dataset.x || "[]");
     const y = JSON.parse(canvas.dataset.y || "[]");
@@ -128,6 +132,10 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
               color: gridColor,
               drawOnChartArea: true,
             },
+            // Ensure consistent plot-area left edge across charts
+            afterFit: (scale: any) => {
+              scale.width = FIXED_Y_AXIS_WIDTH;
+            },
             ticks: {
               color: tickColor,
               maxTicksLimit: 5,
@@ -141,7 +149,8 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
               tooltipFormat: "PP",
               displayFormats: {
                 hour: "HH:mm",
-                day: "MMM d",
+                // Include year on day ticks to avoid cross-year ambiguity
+                day: "MMM d, yyyy",
                 month: "MMM yyyy",
                 year: "yyyy",
               },

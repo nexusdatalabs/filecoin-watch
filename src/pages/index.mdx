@@ -28,7 +28,7 @@ export const series = (() => {
 
   const rows = lines.map((line) => line.split(","));
   rows.sort((a, b) => (a[dateIdx] < b[dateIdx] ? -1 : a[dateIdx] > b[dateIdx] ? 1 : 0));
-  const last = rows.slice(-180);
+  const last = rows.slice(-560);
 
   return last.map((cols) => {
     const rec = {};
