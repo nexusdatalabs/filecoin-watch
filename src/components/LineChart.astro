@@ -145,13 +145,13 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
           x: {
             type: "time",
             time: {
-              unit: "day",
+              // Show ticks at monthly intervals; data can still be daily
+              unit: "month",
               tooltipFormat: "PP",
               displayFormats: {
                 hour: "HH:mm",
-                // Include year on day ticks to avoid cross-year ambiguity
                 day: "MMM d, yyyy",
-                month: "MMM yyyy",
+                month: "MMM",
                 year: "yyyy",
               },
             },
@@ -160,10 +160,19 @@ const values = (Array.isArray(data) ? data : []).map((d) => {
             ticks: {
               color: tickColor,
               autoSkip: true,
-              maxTicksLimit: 6,
+              maxTicksLimit: 10,
               maxRotation: 0,
               minRotation: 0,
               padding: 4,
+              // Simple approach: month labels for most ticks, years for major ticks (January)
+              major: { enabled: true },
+              callback: (value, index, ticks) => {
+                const t = (ticks && ticks[index]) as any;
+                const v = (t && (t.value ?? t.label)) ?? value;
+                const d = new Date(typeof v === "string" ? Number(v) || v : (v as any));
+                if (t && t.major) return String(d.getFullYear());
+                return d.toLocaleString(undefined, { month: "short" });
+              },
             },
           },
         },
