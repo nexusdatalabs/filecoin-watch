@@ -1,16 +1,16 @@
 ---
 ---
 
-<form id="date-filter" class="date-filter" aria-label="Filter charts by date" novalidate>
+<form id="date-filter" class="date-filter">
   <fieldset>
     <legend>Date filter</legend>
     <div class="row">
       <label for="df-from">From</label>
-      <input id="df-from" name="from" type="date" inputmode="numeric" placeholder="YYYY-MM-DD" title="Use YYYY-MM-DD" />
+      <input id="df-from" name="from" type="date" />
     </div>
     <div class="row">
       <label for="df-to">To</label>
-      <input id="df-to" name="to" type="date" inputmode="numeric" placeholder="YYYY-MM-DD" title="Use YYYY-MM-DD" />
+      <input id="df-to" name="to" type="date" />
     </div>
     <div class="actions">
       <button type="button" data-last-180>Last 180 days</button>
@@ -89,13 +89,11 @@
       writeParams(from, to, { push: true });
     });
 
-    // Keep inputs in sync when navigating history externally
+    // Keep inputs in sync when navigating history (charts listen to popstate)
     window.addEventListener('popstate', () => {
       const p = readParams();
       fromEl.value = p.from || '';
       toEl.value = p.to || '';
-      const ev = new CustomEvent('datefilter:changed', { detail: p });
-      window.dispatchEvent(ev);
     });
   }
 
