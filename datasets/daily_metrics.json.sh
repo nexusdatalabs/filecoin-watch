@@ -11,5 +11,5 @@ COPY (
     providers_with_active_deals,
     providers_with_power
   FROM read_parquet('https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet')
-) TO STDOUT (FORMAT 'CSV');
+) TO STDOUT (FORMAT 'JSON', ARRAY true);
 EOF

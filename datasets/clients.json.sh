@@ -6,5 +6,5 @@ COPY (
   SELECT
     *
   FROM read_parquet('https://data.filecoindataportal.xyz/filecoin_clients.parquet')
-) TO STDOUT (FORMAT 'CSV');
+) TO STDOUT (FORMAT 'JSON', ARRAY true);
 EOF

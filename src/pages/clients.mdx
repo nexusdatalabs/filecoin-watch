@@ -2,18 +2,13 @@
 layout: "../layouts/Layout.astro"
 ---
 
-import clientsCsv from "../data/clients.csv?raw";
-import { parse } from 'csv-parse/sync';
+import clientsData from "../data/clients.json";
 import ClientsTable from "../components/ClientsTable.astro";
 
 export const clients = (() => {
-  const rows = parse(clientsCsv, {
-    columns: true,
-    skip_empty_lines: true,
-    relax_column_count: true,
-  });
+  const rows = Array.isArray(clientsData) ? [...clientsData] : [];
   // Default sort: total deals (numeric) descending
-  rows.sort((a, b) => (Number(b.total_deals || 0) - Number(a.total_deals || 0)));
+  rows.sort((a, b) => Number(b.total_deals || 0) - Number(a.total_deals || 0));
   return rows;
 })();
 

@@ -55,7 +55,7 @@ const cid = `ctbl-${Math.random().toString(36).slice(2, 8)}`;
   </div>
 
   <!-- Embed data once for the tiny island script to consume -->
-  <script type="application/json" data-source set:html={JSON.stringify(rows)}></script>
+  <script is:inline type="application/json" data-source set:html={JSON.stringify(rows)}></script>
 </section>
 
 <script is:inline define:vars={{ cid }}>

@@ -2,41 +2,11 @@
 layout: "../layouts/Layout.astro"
 ---
 
-import csvText from "../data/daily_metrics.csv?raw";
-import { parse } from "csv-parse/sync";
+import seriesData from "../data/daily_metrics.json";
 import LineChart from "../components/LineChart.astro";
 import DateFilter from "../components/DateFilter.astro";
 
-export const latestEntries = (() => {
-  const records = parse(csvText.trim(), { skip_empty_lines: true });
-  if (!records || records.length < 2) return [];
-  const [headers, ...rows] = records;
-  const dateIdx = headers.indexOf("date");
-  const latestRow = rows.reduce((best, cur) => {
-    if (!best) return cur;
-    // ISO date strings compare lexicographically
-    return cur[dateIdx] > best[dateIdx] ? cur : best;
-  }, null);
-  return headers.map((h, i) => [h, latestRow?.[i] ?? ""]);
-})();
-
-export const series = (() => {
-  const records = parse(csvText.trim(), { skip_empty_lines: true });
-  if (!records || records.length < 2) return [];
-  const [headers, ...rows] = records;
-  const dateIdx = headers.indexOf("date");
-  if (dateIdx === -1) return [];
-
-  rows.sort((a, b) => (a[dateIdx] < b[dateIdx] ? -1 : a[dateIdx] > b[dateIdx] ? 1 : 0));
-
-  return rows.map((cols) => {
-    const rec = {};
-    headers.forEach((h, i) => {
-      rec[h] = i === dateIdx ? cols[i] : Number(cols[i] || 0);
-    });
-    return rec;
-  });
-})();
+export const latestEntries = Object.entries(seriesData.at(0) ?? {});
 
 <header class="site-header">
   <a href={import.meta.env.BASE_URL} aria-label="Filecoin Watch home">
@@ -85,11 +55,11 @@ Filecoin Watch is a tiny site that creates essential Filecoin reports across ent
 <DateFilter />
 
 <div class="charts" id="charts">
-  <LineChart data={series} x="date" y="unique_deal_making_clients" label="Unique deal-making clients" />
-  <LineChart data={series} x="date" y="unique_deal_making_providers" label="Unique deal-making providers" />
-  <LineChart data={series} x="date" y="clients_with_active_deals" label="Clients with active deals" />
-  <LineChart data={series} x="date" y="providers_with_active_deals" label="Providers with active deals" />
-  <LineChart data={series} x="date" y="providers_with_power" label="Providers with power" />
+  <LineChart data={seriesData} x="date" y="unique_deal_making_clients" label="Unique deal-making clients" />
+  <LineChart data={seriesData} x="date" y="unique_deal_making_providers" label="Unique deal-making providers" />
+  <LineChart data={seriesData} x="date" y="clients_with_active_deals" label="Clients with active deals" />
+  <LineChart data={seriesData} x="date" y="providers_with_active_deals" label="Providers with active deals" />
+  <LineChart data={seriesData} x="date" y="providers_with_power" label="Providers with power" />
   </div>
 
 ## Status

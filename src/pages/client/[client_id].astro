@@ -1,15 +1,15 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import clientsCsv from "../../data/clients.csv?raw";
-import { parse } from 'csv-parse/sync';
+import clientsData from "../../data/clients.json";
 
 export async function getStaticPaths() {
-  const records = parse(clientsCsv, { columns: true, skip_empty_lines: true, relax_column_count: true });
-  return records.map((r: Record<string, string>) => ({ params: { client_id: r.client_id }, props: { data: r } }));
+  const rows = (clientsData as any[]).filter((r) => r && r.client_id);
+  return rows.map((r: any) => ({ params: { client_id: String(r.client_id) }, props: { data: r } }));
 }
 
-const { data } = Astro.props as { data: Record<string, string> };
-const title = data.client_name || data.client_id;
+const { data } = Astro.props as { data: Record<string, unknown> };
+const c = data as any;
+const title = String(c.client_name || c.client_id);
 ---
 
 <Layout>
@@ -26,18 +26,18 @@ const title = data.client_name || data.client_id;
       />
     </a>
     <h1>Client: {title}</h1>
-    <p class="subhead">ID: {String(data.client_id)}</p>
+    <p class="subhead">ID: {String(c.client_id)}</p>
   </header>
 
   <section>
     <h2>Summary</h2>
     <dl class="metrics">
-      <dt>Organization</dt><dd>{String(data.organization_name || '—')}</dd>
-      <dt>Region</dt><dd>{String(data.region || '—')}</dd>
-      <dt>Industry</dt><dd>{String(data.industry || '—')}</dd>
-      <dt>Website</dt><dd>{String(data.client_website || '—')}</dd>
-      <dt>Role</dt><dd>{String(data.client_role || '—')}</dd>
-      <dt>Allocator</dt><dd>{String(data.allocator_id || '—')}</dd>
+      <dt>Organization</dt><dd>{String(c.organization_name || '—')}</dd>
+      <dt>Region</dt><dd>{String(c.region || '—')}</dd>
+      <dt>Industry</dt><dd>{String(c.industry || '—')}</dd>
+      <dt>Website</dt><dd>{String(c.client_website || '—')}</dd>
+      <dt>Role</dt><dd>{String(c.client_role || '—')}</dd>
+      <dt>Allocator</dt><dd>{String(c.allocator_id || '—')}</dd>
     </dl>
   </section>
 
