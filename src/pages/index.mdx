@@ -5,52 +5,13 @@ layout: "../layouts/Layout.astro"
 import seriesData from "../data/daily_metrics.json";
 import LineChart from "../components/LineChart.astro";
 import DateFilter from "../components/DateFilter.astro";
+import Header from "../components/Header.astro";
 
 export const latestEntries = Object.entries(seriesData.at(0) ?? {});
 
-<header class="site-header">
-  <a href={import.meta.env.BASE_URL} aria-label="Filecoin Watch home">
-    <img
-      src={import.meta.env.BASE_URL + 'favicon.svg'}
-      alt="Filecoin Watch"
-      width="56"
-      height="56"
-      decoding="async"
-      loading="eager"
-      fetchpriority="high"
-    />
-  </a>
-  # Filecoin Watch
+<Header />
 
-  <p class="subhead">An operational view into the Filecoin network</p>
-  <nav aria-label="Primary">
-    <ul class="nav">
-      <li><a href="#about">About</a></li>
-      <li><a href={import.meta.env.BASE_URL + 'clients'}>Clients</a></li>
-      <li><a href="#charts">Charts</a></li>
-      <li><a href="#status">Status</a></li>
-    </ul>
-  </nav>
-</header>
-
-## About
-
-Filecoin Watch is a tiny site that creates essential Filecoin reports across entities like Clients, Providers, Onramps, or Allocators using data from the Filecoin Data Portal.
-
-## Metrics
-
-<dl class="metrics">
-  {
-    latestEntries.map(([key, value]) => (
-      <>
-        <dt>{key}</dt>
-        <dd>{value}</dd>
-      </>
-    ))
-  }
-</dl>
-
-## Charts
+## Overview
 
 <DateFilter />
 
@@ -61,7 +22,3 @@ Filecoin Watch is a tiny site that creates essential Filecoin reports across ent
   <LineChart data={seriesData} x="date" y="providers_with_active_deals" label="Providers with active deals" />
   <LineChart data={seriesData} x="date" y="providers_with_power" label="Providers with power" />
   </div>
-
-## Status
-
-Super Alpha. Data wiring and charts coming soon.

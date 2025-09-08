@@ -43,9 +43,8 @@
     --space-16: 4rem;
     /* 64px */
 
-    /* Container spacing tokens */
     --container-px: clamp(var(--space-5), 4vw, var(--space-10));
-    --container-my: clamp(var(--space-6), 6vh, var(--space-16));
+    --container-my: clamp(var(--space-3), 3vh, var(--space-4));
 }
 
 html,
@@ -82,7 +81,7 @@ body {
 /* Header */
 .site-header {
     text-align: center;
-    margin: var(--space-6) auto var(--space-6);
+    margin: auto auto var(--space-6);
 }
 
 .site-header a {

@@ -1,9 +1,10 @@
 ---
+
 ---
 
 <form id="date-filter" class="date-filter">
   <fieldset>
-    <legend>Date filter</legend>
+    <legend>Dates</legend>
     <div class="row">
       <label for="df-from">From</label>
       <input id="df-from" name="from" type="date" />
@@ -21,34 +22,37 @@
 </form>
 
 <script>
-  // Minimal island to sync date inputs with URL and notify charts
-  const form = document.getElementById('date-filter') as HTMLFormElement | null;
-  const fromEl = form?.querySelector<HTMLInputElement>('#df-from');
-  const toEl = form?.querySelector<HTMLInputElement>('#df-to');
-  const lastYearBtn = form?.querySelector<HTMLButtonElement>('[data-last-year]');
-  const last180Btn = form?.querySelector<HTMLButtonElement>('[data-last-180]');
-  const allTimeBtn = form?.querySelector<HTMLButtonElement>('[data-all-time]');
+  const form = document.getElementById("date-filter") as HTMLFormElement | null;
+  const fromEl = form?.querySelector<HTMLInputElement>("#df-from");
+  const toEl = form?.querySelector<HTMLInputElement>("#df-to");
+  const lastYearBtn =
+    form?.querySelector<HTMLButtonElement>("[data-last-year]");
+  const last180Btn = form?.querySelector<HTMLButtonElement>("[data-last-180]");
+  const allTimeBtn = form?.querySelector<HTMLButtonElement>("[data-all-time]");
 
   const fmt = (d: Date) => {
     const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
     return `${y}-${m}-${day}`;
   };
 
   function readParams() {
     const sp = new URLSearchParams(location.search);
-    const from = sp.get('from') || '';
-    const to = sp.get('to') || '';
+    const from = sp.get("from") || "";
+    const to = sp.get("to") || "";
     return { from, to };
   }
 
   function writeParams(from: string, to: string, { push = false } = {}) {
     const url = new URL(location.href);
-    if (from) url.searchParams.set('from', from); else url.searchParams.delete('from');
-    if (to) url.searchParams.set('to', to); else url.searchParams.delete('to');
-    if (push) history.pushState(null, '', url); else history.replaceState(null, '', url);
-    const ev = new CustomEvent('datefilter:changed', { detail: { from, to } });
+    if (from) url.searchParams.set("from", from);
+    else url.searchParams.delete("from");
+    if (to) url.searchParams.set("to", to);
+    else url.searchParams.delete("to");
+    if (push) history.pushState(null, "", url);
+    else history.replaceState(null, "", url);
+    const ev = new CustomEvent("datefilter:changed", { detail: { from, to } });
     window.dispatchEvent(ev);
   }
 
@@ -58,21 +62,21 @@
     if (from) fromEl.value = from;
     if (to) toEl.value = to;
 
-    form.addEventListener('change', (e) => {
+    form.addEventListener("change", (e) => {
       const t = e.target as HTMLElement | null;
       if (!t) return;
-      if (t.id === 'df-from' || t.id === 'df-to') {
+      if (t.id === "df-from" || t.id === "df-to") {
         writeParams(fromEl.value, toEl.value);
       }
     });
 
-    allTimeBtn?.addEventListener('click', () => {
-      fromEl.value = '';
-      toEl.value = '';
-      writeParams('', '', { push: true });
+    allTimeBtn?.addEventListener("click", () => {
+      fromEl.value = "";
+      toEl.value = "";
+      writeParams("", "", { push: true });
     });
 
-    lastYearBtn?.addEventListener('click', () => {
+    lastYearBtn?.addEventListener("click", () => {
       const today = new Date();
       const to = fmt(today);
       const lastYear = new Date(today);
@@ -83,7 +87,7 @@
       writeParams(from, to, { push: true });
     });
 
-    last180Btn?.addEventListener('click', () => {
+    last180Btn?.addEventListener("click", () => {
       const today = new Date();
       const to = fmt(today);
       const fromDate = new Date(today);
@@ -95,10 +99,10 @@
     });
 
     // Keep inputs in sync when navigating history (charts listen to popstate)
-    window.addEventListener('popstate', () => {
+    window.addEventListener("popstate", () => {
       const p = readParams();
-      fromEl.value = p.from || '';
-      toEl.value = p.to || '';
+      fromEl.value = p.from || "";
+      toEl.value = p.to || "";
     });
   }
 
@@ -106,15 +110,60 @@
 </script>
 
 <style>
-  .date-filter { margin: var(--space-3) 0 var(--space-4); }
-  .date-filter fieldset { border: 1px solid var(--border); padding: var(--space-3); }
-  .date-filter legend { font-family: var(--font-monospace); font-weight: 600; padding: 0 var(--space-1); }
-  .date-filter .row { display: grid; grid-template-columns: 80px 1fr; align-items: center; gap: var(--space-2); margin: var(--space-2) 0; }
-  .date-filter label { color: var(--muted); font-family: var(--font-monospace); }
-  .date-filter input[type="date"] { font: inherit; padding: 4px 6px; border: 1px solid var(--border); background: var(--bg); color: inherit; border-radius: 4px; }
-  .date-filter .actions { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
-  .date-filter button { font: inherit; padding: 4px 8px; border: 1px solid var(--border); background: var(--bg); color: inherit; border-radius: 6px; }
-  .date-filter button:hover { background: #f2f2f2; }
-  .date-filter button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
-  @media (max-width: 640px) { .date-filter .row { grid-template-columns: 1fr; } }
+  .date-filter {
+    margin: var(--space-3) 0 var(--space-4);
+  }
+  .date-filter fieldset {
+    border: 1px solid var(--border);
+    padding: var(--space-3);
+  }
+  .date-filter legend {
+    font-family: var(--font-monospace);
+    font-weight: 600;
+    padding: 0 var(--space-1);
+  }
+  .date-filter .row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    align-items: center;
+    gap: var(--space-2);
+    margin: var(--space-2) 0;
+  }
+  .date-filter label {
+    color: var(--muted);
+    font-family: var(--font-monospace);
+  }
+  .date-filter input[type="date"] {
+    font: inherit;
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: inherit;
+    border-radius: 4px;
+  }
+  .date-filter .actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+  .date-filter button {
+    font: inherit;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: inherit;
+    border-radius: 6px;
+  }
+  .date-filter button:hover {
+    background: #f2f2f2;
+  }
+  .date-filter button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  @media (max-width: 640px) {
+    .date-filter .row {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
