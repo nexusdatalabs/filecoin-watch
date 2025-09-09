@@ -16,6 +16,7 @@
     --fg: #111;
     --muted: #666;
     --border: #e5e5e5;
+    --hover-bg: #f2f2f2;
     --code-bg: #f6f8fa;
     --blockquote-bg: #fafafa;
     --link-underline: #b1b1b1;
@@ -51,6 +52,20 @@ html,
 body {
     margin: 0;
     padding: 0;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body>main.container {
+    flex: 1 0 auto;
 }
 
 /* Page container keeps content centered and readable */
@@ -326,7 +341,7 @@ pre:focus-within .copy-btn {
 }
 
 .copy-btn:hover {
-    background: #f2f2f2;
+    background: var(--hover-bg);
 }
 
 .copy-btn:focus-visible {

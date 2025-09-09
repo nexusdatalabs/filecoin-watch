@@ -7,8 +7,6 @@ import LineChart from "../components/LineChart.astro";
 import DateFilter from "../components/DateFilter.astro";
 import Header from "../components/Header.astro";
 
-export const latestEntries = Object.entries(seriesData.at(0) ?? {});
-
 <Header />
 
 ## Overview
@@ -21,4 +19,4 @@ export const latestEntries = Object.entries(seriesData.at(0) ?? {});
   <LineChart data={seriesData} x="date" y="clients_with_active_deals" label="Clients with active deals" />
   <LineChart data={seriesData} x="date" y="providers_with_active_deals" label="Providers with active deals" />
   <LineChart data={seriesData} x="date" y="providers_with_power" label="Providers with power" />
-  </div>
+</div>

@@ -4,7 +4,27 @@ layout: "../layouts/Layout.astro"
 
 import clientsData from "../data/clients.json";
 import ClientsTable from "../components/ClientsTable.astro";
+import dailyMetrics from "../data/daily_metrics.json";
+import LineChart from "../components/LineChart.astro";
 
-# Clients
+<header class="site-header">
+<a href={import.meta.env.BASE_URL} aria-label="Filecoin Watch home">
+    <img
+    src={import.meta.env.BASE_URL + 'favicon.svg'}
+    alt="Filecoin Watch"
+    width="56"
+    height="56"
+    decoding="async"
+    loading="eager"
+    fetchpriority="high"
+    />
+</a>
+<h1>Filecoin Clients</h1>
+</header>
 
-<ClientsTable rows={clientsData} pageSize={50} baseUrl={import.meta.env.BASE_URL} />
+<LineChart data={dailyMetrics} x="date" y="unique_deal_making_clients" label="Unique deal-making clients" />
+<LineChart data={dailyMetrics} x="date" y="clients_with_active_deals" label="Clients with active deals" />
+
+## Explorer
+
+<ClientsTable rows={clientsData} pageSize={20} baseUrl={import.meta.env.BASE_URL} />
