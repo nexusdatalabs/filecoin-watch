@@ -53,6 +53,20 @@ body {
     padding: 0;
 }
 
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body>main.container {
+    flex: 1 0 auto;
+}
+
 /* Page container keeps content centered and readable */
 .container {
     max-width: 70ch;

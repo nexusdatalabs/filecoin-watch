@@ -1,4 +1,4 @@
-# Filecoin Watch 🧿
+# Filecoin Watch 👁️
 
 Your explorer for Filecoin entities. Check different metrics for Clients, Providers, Allocators, ...
 

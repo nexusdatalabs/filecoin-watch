@@ -14,31 +14,32 @@ export interface Props {
   baseUrl?: string;
 }
 
-const { rows = [], pageSize = 50, baseUrl = '/' } = Astro.props as Props;
+const { rows = [], pageSize = 20, baseUrl = "/" } = Astro.props as Props;
 
 // Provide a stable id so multiple tables can coexist if needed
 const cid = `ctbl-${Math.random().toString(36).slice(2, 8)}`;
 ---
 
-<section id={cid} class="clients-table" aria-label="Clients table" data-base={baseUrl} data-page-size={String(pageSize)}>
-  <div class="clients-toolbar" aria-live="polite">
-    <div class="pager" data-pos="top">
-      <button type="button" data-prev aria-label="Previous page">Prev</button>
-      <span class="page-info" data-page-info>Page 1 of 1</span>
-      <button type="button" data-next aria-label="Next page">Next</button>
-    </div>
-  </div>
-
+<section
+  id={cid}
+  class="clients-table"
+  aria-label="Clients table"
+  data-base={baseUrl}
+  data-page-size={String(pageSize)}
+>
   <table class="clients" data-table>
     <thead>
       <tr>
-        <th data-key="client" data-sortable>
-          Client
-        </th>
+        <th data-key="client" data-sortable> Client </th>
         <th data-key="organization_name" data-sortable>Organization</th>
         <th data-key="region" data-sortable>Region</th>
         <th data-key="industry" data-sortable>Industry</th>
-        <th class="num" data-key="total_deals" data-sortable data-default-sort="desc">Total deals</th>
+        <th
+          class="num"
+          data-key="total_deals"
+          data-sortable
+          data-default-sort="desc">Total deals</th
+        >
       </tr>
     </thead>
     <tbody data-body>
@@ -55,83 +56,98 @@ const cid = `ctbl-${Math.random().toString(36).slice(2, 8)}`;
   </div>
 
   <!-- Embed data once for the tiny island script to consume -->
-  <script is:inline type="application/json" data-source set:html={JSON.stringify(rows)}></script>
+  <script
+    is:inline
+    type="application/json"
+    data-source
+    set:html={JSON.stringify(rows)}
+  />
 </section>
 
 <script is:inline define:vars={{ cid }}>
   // Lightweight table island: sorting + pagination only (plain JS)
 
   const root = document.getElementById(cid);
-  if (!root) { console.warn('ClientsTable: root not found'); }
-  const tbody = root?.querySelector('[data-body]') || null;
-  const table = root?.querySelector('[data-table]') || null;
-  const pageInfos = root?.querySelectorAll('[data-page-info]') || [];
-  const prevBtns = root?.querySelectorAll('[data-prev]') || [];
-  const nextBtns = root?.querySelectorAll('[data-next]') || [];
+  if (!root) {
+    console.warn("ClientsTable: root not found");
+  }
+  const tbody = root?.querySelector("[data-body]") || null;
+  const table = root?.querySelector("[data-table]") || null;
+  const pageInfos = root?.querySelectorAll("[data-page-info]") || [];
+  const prevBtns = root?.querySelectorAll("[data-prev]") || [];
+  const nextBtns = root?.querySelectorAll("[data-next]") || [];
 
-  const BASE = root?.getAttribute('data-base') || '/';
-  const PAGE_SIZE = Number(root?.getAttribute('data-page-size') || '50');
+  const BASE = root?.getAttribute("data-base") || "/";
+  const PAGE_SIZE = Number(root?.getAttribute("data-page-size") || "50");
 
   function readRows() {
     try {
-      const src = root?.querySelector('script[type="application/json"][data-source]');
-      return JSON.parse(src?.textContent || '[]');
-    } catch { return []; }
+      const src = root?.querySelector(
+        'script[type="application/json"][data-source]',
+      );
+      return JSON.parse(src?.textContent || "[]");
+    } catch {
+      return [];
+    }
   }
 
   const formatNum = (v) => {
     const n = Number(v);
-    return Number.isFinite(n) ? n.toLocaleString() : '0';
+    return Number.isFinite(n) ? n.toLocaleString() : "0";
   };
 
   const state = {
     rows: readRows(),
     page: 1,
-    sortKey: 'total_deals',
-    dir: 'desc',
+    sortKey: "total_deals",
+    dir: "desc",
   };
 
   // Initial sort comes from header with data-default-sort if present
-  const defaultSortTh = table?.querySelector('th[data-key][data-default-sort]');
+  const defaultSortTh = table?.querySelector("th[data-key][data-default-sort]");
   if (defaultSortTh) {
     state.sortKey = defaultSortTh.dataset.key || state.sortKey;
-    state.dir = (defaultSortTh.dataset.defaultSort === 'asc' ? 'asc' : 'desc');
+    state.dir = defaultSortTh.dataset.defaultSort === "asc" ? "asc" : "desc";
   }
 
   // Read URL params for page/sort so back/forward works
   function readParams() {
     const sp = new URLSearchParams(location.search);
-    const p = Math.max(1, Number(sp.get('page') || 1));
-    const sort = sp.get('sort') || state.sortKey;
-    const dir = sp.get('dir') || state.dir;
+    const p = Math.max(1, Number(sp.get("page") || 1));
+    const sort = sp.get("sort") || state.sortKey;
+    const dir = sp.get("dir") || state.dir;
     return { p, sort, dir };
   }
 
   function writeParams(page, sortKey, dir, { replace = true } = {}) {
     const url = new URL(location.href);
-    url.searchParams.set('page', String(page));
-    url.searchParams.set('sort', sortKey);
-    url.searchParams.set('dir', dir);
-    if (replace) history.replaceState(null, '', url); else history.pushState(null, '', url);
+    url.searchParams.set("page", String(page));
+    url.searchParams.set("sort", sortKey);
+    url.searchParams.set("dir", dir);
+    if (replace) history.replaceState(null, "", url);
+    else history.pushState(null, "", url);
   }
 
   function sortRows(rows, key, dir) {
     const arr = rows.slice();
-    const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
-    const mul = dir === 'asc' ? 1 : -1;
+    const collator = new Intl.Collator(undefined, {
+      sensitivity: "base",
+      numeric: true,
+    });
+    const mul = dir === "asc" ? 1 : -1;
     arr.sort((a, b) => {
-      if (key === 'client') {
-        const an = (a.client_name || a.client_id || '').toString();
-        const bn = (b.client_name || b.client_id || '').toString();
+      if (key === "client") {
+        const an = (a.client_name || a.client_id || "").toString();
+        const bn = (b.client_name || b.client_id || "").toString();
         return collator.compare(an, bn) * mul;
       }
-      if (key === 'total_deals') {
+      if (key === "total_deals") {
         const an = Number(a.total_deals || 0);
         const bn = Number(b.total_deals || 0);
         return (an === bn ? 0 : an < bn ? -1 : 1) * mul;
       }
-      const av = a[key] || '';
-      const bv = b[key] || '';
+      const av = a[key] || "";
+      const bv = b[key] || "";
       return collator.compare(String(av), String(bv)) * mul;
     });
     return arr;
@@ -150,63 +166,90 @@ const cid = `ctbl-${Math.random().toString(36).slice(2, 8)}`;
     const slice = pageRows(sorted, state.page, PAGE_SIZE);
 
     // Rows
-    const rowsHtml = slice.map(r => `
+    const rowsHtml = slice
+      .map(
+        (r) => `
       <tr>
         <td>
-          <a href="${BASE}client/${r.client_id}/">${(r.client_name || r.client_id || '').toString()}</a>
+          <a href="${BASE}client/${r.client_id}/">${(r.client_name || r.client_id || "").toString()}</a>
           <div class="muted">${r.client_id}</div>
         </td>
-        <td>${(r.organization_name || '—').toString()}</td>
-        <td>${(r.region || '—').toString()}</td>
-        <td>${(r.industry || '—').toString()}</td>
+        <td>${(r.organization_name || "—").toString()}</td>
+        <td>${(r.region || "—").toString()}</td>
+        <td>${(r.industry || "—").toString()}</td>
         <td class="num">${formatNum(r.total_deals)}</td>
       </tr>
-    `).join('');
+    `,
+      )
+      .join("");
     tbody.innerHTML = rowsHtml;
 
     // Page info + buttons
-    pageInfos.forEach(el => el.textContent = `Page ${state.page} of ${totalPages}`);
-    prevBtns.forEach(btn => btn.disabled = state.page <= 1);
-    nextBtns.forEach(btn => btn.disabled = state.page >= totalPages);
+    pageInfos.forEach(
+      (el) => (el.textContent = `Page ${state.page} of ${totalPages}`),
+    );
+    prevBtns.forEach((btn) => (btn.disabled = state.page <= 1));
+    nextBtns.forEach((btn) => (btn.disabled = state.page >= totalPages));
 
     // Header sort indicators
-    table?.querySelectorAll('th[data-key]').forEach(th => {
+    table?.querySelectorAll("th[data-key]").forEach((th) => {
       const key = th.dataset.key;
       const isActive = key === state.sortKey;
-      th.classList.toggle('sorted', isActive);
-      th.setAttribute('aria-sort', isActive ? (state.dir === 'asc' ? 'ascending' : 'descending') : 'none');
+      th.classList.toggle("sorted", isActive);
+      th.setAttribute(
+        "aria-sort",
+        isActive ? (state.dir === "asc" ? "ascending" : "descending") : "none",
+      );
     });
 
     writeParams(state.page, state.sortKey, state.dir, { replace: true });
   }
 
   // Wire interactions
-  table?.querySelectorAll('th[data-sortable]').forEach(el => {
+  table?.querySelectorAll("th[data-sortable]").forEach((el) => {
     const th = el;
-    th.addEventListener('click', () => {
+    th.addEventListener("click", () => {
       const key = th.dataset.key;
       if (!key) return;
       if (state.sortKey === key) {
-        state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+        state.dir = state.dir === "asc" ? "desc" : "asc";
       } else {
         state.sortKey = key;
-        state.dir = key === 'total_deals' ? 'desc' : 'asc';
+        state.dir = key === "total_deals" ? "desc" : "asc";
       }
       state.page = 1;
       render();
     });
-    th.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); th.click(); }
+    th.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        th.click();
+      }
     });
     th.tabIndex = 0; // keyboard focusable
-    th.setAttribute('role', 'button');
-    th.setAttribute('aria-label', `${th.textContent?.trim() || 'Column'}: sort`);
+    th.setAttribute("role", "button");
+    th.setAttribute(
+      "aria-label",
+      `${th.textContent?.trim() || "Column"}: sort`,
+    );
   });
 
-  prevBtns.forEach(btn => btn.addEventListener('click', () => { if (state.page > 1) { state.page -= 1; render(); } }));
-  nextBtns.forEach(btn => btn.addEventListener('click', () => { state.page += 1; render(); }));
+  prevBtns.forEach((btn) =>
+    btn.addEventListener("click", () => {
+      if (state.page > 1) {
+        state.page -= 1;
+        render();
+      }
+    }),
+  );
+  nextBtns.forEach((btn) =>
+    btn.addEventListener("click", () => {
+      state.page += 1;
+      render();
+    }),
+  );
 
-  window.addEventListener('popstate', () => {
+  window.addEventListener("popstate", () => {
     const p = readParams();
     state.page = Math.max(1, p.p);
     state.sortKey = p.sort;
@@ -223,18 +266,65 @@ const cid = `ctbl-${Math.random().toString(36).slice(2, 8)}`;
 </script>
 
 <style>
-  .clients-table { margin: var(--space-4) auto; }
-  .clients { border-collapse: collapse; margin: var(--space-4) auto; font-family: var(--font-monospace); }
-  .clients th, .clients td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  .clients th[data-sortable] { cursor: pointer; user-select: none; white-space: nowrap; }
-  .clients th[aria-sort="ascending"]::after { content: ' ▲'; }
-  .clients th[aria-sort="descending"]::after { content: ' ▼'; }
-  .clients .num { text-align: right; }
-  .muted { color: var(--muted); font-size: 0.85em; }
-  .clients-toolbar { display: flex; justify-content: center; margin: var(--space-3) 0; }
-  .pager { display: flex; align-items: center; gap: var(--space-3); }
-  .pager button { font: inherit; padding: 4px 8px; border: 1px solid var(--border); background: var(--bg); color: inherit; border-radius: 6px; }
-  .pager button:disabled { opacity: .4; cursor: not-allowed; }
-  .pager button:hover:not(:disabled) { background: #f2f2f2; }
-  .pager button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .clients-table {
+    margin: var(--space-4) auto;
+  }
+  .clients {
+    border-collapse: collapse;
+    margin: var(--space-4) auto;
+    font-family: var(--font-monospace);
+  }
+  .clients th,
+  .clients td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .clients th[data-sortable] {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .clients th[aria-sort="ascending"]::after {
+    content: " ▲";
+  }
+  .clients th[aria-sort="descending"]::after {
+    content: " ▼";
+  }
+  .clients .num {
+    text-align: right;
+  }
+  .muted {
+    color: var(--muted);
+    font-size: 0.85em;
+  }
+  .clients-toolbar {
+    display: flex;
+    justify-content: center;
+    margin: var(--space-3) 0;
+  }
+  .pager {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .pager button {
+    font: inherit;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: inherit;
+    border-radius: 6px;
+  }
+  .pager button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .pager button:hover:not(:disabled) {
+    background: #f2f2f2;
+  }
+  .pager button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
 </style>
