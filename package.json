@@ -12,8 +12,8 @@
     "check": "astro check"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.3.4",
-    "astro": "^5.13.5",
+    "@astrojs/mdx": "^4.3.5",
+    "astro": "^5.13.6",
     "chart.js": "^4.5.0",
     "chartjs-adapter-date-fns": "^3.0.0"
   },
