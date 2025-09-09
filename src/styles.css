@@ -16,6 +16,7 @@
     --fg: #111;
     --muted: #666;
     --border: #e5e5e5;
+    --hover-bg: #f2f2f2;
     --code-bg: #f6f8fa;
     --blockquote-bg: #fafafa;
     --link-underline: #b1b1b1;
@@ -340,7 +341,7 @@ pre:focus-within .copy-btn {
 }
 
 .copy-btn:hover {
-    background: #f2f2f2;
+    background: var(--hover-bg);
 }
 
 .copy-btn:focus-visible {
