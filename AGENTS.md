@@ -40,5 +40,6 @@
 ## Commit & Pull Request Guidelines
 
 - Commit with atomic, clear and descriptive messages preceded by a relevant emoji. E.g: `✨ Add style feature` or `🐛 Fix layout bug`
+  - No selectors (e.g: `chore:` or `content:`).
 - PRs should include purpose, actions, and manual steps to verify (`dev`, `build`, `preview`). Link related issues.
 - Branch names should be simple and descriptive, using kebab-case (e.g., `add-new-feature`).
